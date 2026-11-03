@@ -12,5 +12,5 @@ public static class PresentationRules
         2*Math.Atan(Math.Tan(original*Math.PI/360)*Math.Max(1,(2d/3)*height/Math.Max(1,width)))*180/Math.PI;
     // Convert screen-pixel movement to the original 320x480 input coordinate scale.
     // Use the actual orthographic height so widescreen displays do not make flicks too weak.
-    public static float TouchScale(double width,double height)=>(float)(4.8*HalfHeight(width,height)/Math.Max(1,height));
+    public static float TouchScale(double width,double height)=>(float)(7.2*HalfHeight(width,height)/Math.Max(1,height));
 }
