@@ -35,8 +35,16 @@ public sealed class MainMenuController : UIViewController
         screen="busy";ClearText();legacy.HideRoots();legacy.Show("backdrop");legacy.Show("ui_main_menu_00");legacy.Show("ui_about");
         foreach(var n in legacy.Nodes.Values)if(n.Name is "dimplane" or "about_text"||n.Name?.StartsWith("high_score_bg_")==true)n.Opacity=0;
         var about=legacy.Find("itme");if(about!=null)about.Opacity=1;
-        legacy.Play(Main,"intro",()=>{screen="main";if(intro&&GameStorage.Load()!=null)ResumePrompt();});
+        legacy.Play(Main,"intro",()=>{screen="main";MenuButtons("button_playnow","button_highscore");if(intro&&GameStorage.Load()!=null)ResumePrompt();});
         if(intro)Sound("sharedassets0.assets-130.wav");
+    }
+    bool InMainMenu(SCNNode node){for(SCNNode? n=node;n!=null;n=n.ParentNode)if(n==legacy.Find("ui_main_menu_00"))return true;return false;}
+    void MenuButtons(params string[] visible)
+    {
+        var allowed=visible.ToHashSet();
+        foreach(var node in legacy.Nodes.Values)
+            if(InMainMenu(node)&&node.Name?.StartsWith("button_")==true)
+                node.Hidden=!allowed.Contains(node.Name);
     }
     void Sequence(string[] clips,Action complete)
     {
@@ -58,18 +66,18 @@ public sealed class MainMenuController : UIViewController
         if(screen=="resume") {if(name is "yes" or "no"){screen="busy";legacy.Play(legacy.Id("ui_resume"),name=="yes"?"YesClick":"NoClick",()=>{legacy.Find("ui_resume")!.Hidden=true;if(name=="yes"){var saved=GameStorage.Load();if(saved!=null){Start(saved,false);return;}}else GameStorage.ClearSaved();screen="main";});}return;}
         if(screen=="clear") {if(name is "yes" or "no"){screen="busy";legacy.Play(legacy.Id("ui_are_you_sure"),name=="yes"?"YesClick":"NoClick",()=>{if(name=="yes")GameStorage.ClearScores(roundScores);legacy.Find("ui_are_you_sure")!.Hidden=true;screen="scores";ScoreText();});}return;}
         if(screen=="main") {
-            if(name=="button_playnow"){legacy.Find("ui_about")!.Hidden=true;Sequence(["playnowclick","playnowout","gtin"],()=>{screen="type";SetPracticeTexture();});}
+            if(name=="button_playnow"){legacy.Find("ui_about")!.Hidden=true;Sequence(["playnowclick","playnowout","gtin"],()=>{screen="type";MenuButtons("button_classic","button_practice","button_button_left");SetPracticeTexture();});}
             else if(name=="button_highscore"){legacy.Find("ui_about")!.Hidden=true;Sequence(["hiscoreclick","playnowout"],Scores);}
             else if(name=="itme"){Sequence(["playnowout"],About);}
         } else if(screen=="type") {
-            if(name=="button_classic")Sequence(["gtclassicclick","gtout","npin"],()=>screen="players");
+            if(name=="button_classic")Sequence(["gtclassicclick","gtout","npin"],()=>{screen="players";MenuButtons("button_player_01","button_player_02","button_player_03","button_player_04","button_right_bk");});
             else if(name=="button_practice"&&GameStorage.Unlocked>=2)Sequence(["gtpracticeclick","gtpracticeout"],()=>Start(new GameSession(1,true),true));
             else if(name is "button_button_left" or "button_right_bk")Sequence(["gtbackclick","gtout"],()=>Home());
         } else if(screen=="players") {
             if(name.StartsWith("button_player_")&&int.TryParse(name[^2..],out int count)) {
                 string[] clips=["nponeplayer","nptwoplayer","npthreeplayer","npfourplayer"];
                 Sequence([clips[count-1],"npout"],()=>Start(new GameSession(count),false));
-            }else if(name is "button_button_left" or "button_right_bk")Sequence(["npbackclick","npout","gtin"],()=>screen="type");
+            }else if(name is "button_button_left" or "button_right_bk")Sequence(["npbackclick","npout","gtin"],()=>{screen="type";MenuButtons("button_classic","button_practice","button_button_left");});
         } else if(screen=="scores") {
             if(name=="button_back_hs")ExitScores();
             else if(name=="button_clear_hs"){ClearText();legacy.PlayRange(legacy.Id("ui_back_clear"),"Take 001",40f/30,45f/30);legacy.Show("ui_are_you_sure");foreach(var n in legacy.Find("ui_are_you_sure")!.ChildNodes)n.Opacity=1;screen="clear";}

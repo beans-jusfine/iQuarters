@@ -7,15 +7,16 @@ public sealed class TimedFlickGesture
 {
     public const double ReferenceInterval=1d/60;
     readonly FlickGesture gesture=new();
-    Vector2 pending;
+    Vector2 pending,total;
     double previous,windowTime;
     bool tracking;
     public void Begin(double timestamp){Cancel();if(!double.IsFinite(timestamp))return;previous=timestamp;tracking=true;gesture.Begin();}
-    public void Cancel(){tracking=false;pending=default;windowTime=0;gesture.Cancel();}
+    public void Cancel(){tracking=false;pending=total=default;windowTime=0;gesture.Cancel();}
     public bool Sample(Vector2 delta,double timestamp,out float power,out float aim)
     {
         power=aim=0;
         if(!tracking||!double.IsFinite(timestamp)||timestamp<=previous||!float.IsFinite(delta.X)||!float.IsFinite(delta.Y))return false;
+        total+=delta;
         double duration=timestamp-previous;previous=timestamp;
         if(windowTime+duration<ReferenceInterval-1e-9){pending+=delta;windowTime+=duration;return false;}
         double first=Math.Max(0,ReferenceInterval-windowTime);
@@ -37,6 +38,9 @@ public sealed class TimedFlickGesture
         power=aim=0;
         // A fast swipe can end between window boundaries. Normalize its remaining time.
         bool fired=tracking&&windowTime>1e-9&&gesture.Sample(pending*(float)(ReferenceInterval/windowTime),out power,out aim);
+        // Desktop mouse drags are often reported at a much lower event rate than touch.
+        // If no 60 Hz sample crossed the threshold, evaluate the complete upward drag once.
+        if(!fired&&tracking)fired=gesture.Sample(total,out power,out aim);
         Cancel();return fired;
     }
 }
