@@ -88,7 +88,7 @@ public sealed partial class GameViewController : UIViewController
         };
         touchView.MoveContact=(p,timestamp)=>{
             if(timestamp<=lastTouchTimestamp)return;lastTouchTimestamp=timestamp;
-            float scale=PresentationRules.TouchScale((double)overlay.Bounds.Width);
+            float scale=PresentationRules.TouchScale((double)overlay.Bounds.Width,(double)overlay.Bounds.Height);
             if(state!="play"||shot!=null){flick.Cancel();return;}
             if(adjustingAngle){int change=(int)MathF.Floor((float)(angleTouch.Y-p.Y)*scale*.075f);if(change!=0){angle=Math.Clamp(angle-change,45,55);angleTouch=p;Digits("deg_",(int)angle,2);}return;}
             var delta=new System.Numerics.Vector2((float)(p.X-lastTouch.X),(float)(lastTouch.Y-p.Y));lastTouch=p;
