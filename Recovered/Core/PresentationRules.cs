@@ -10,5 +10,7 @@ public static class PresentationRules
     public static double HalfHeight(double width,double height)=>Math.Max(100,200d/3*height/Math.Max(1,width));
     public static double VerticalFieldOfView(double width,double height,double original=55)=>
         2*Math.Atan(Math.Tan(original*Math.PI/360)*Math.Max(1,(2d/3)*height/Math.Max(1,width)))*180/Math.PI;
-    public static float TouchScale(double width)=>(float)(320/Math.Max(1,width));
+    // Convert screen-pixel movement to the original 320x480 input coordinate scale.
+    // Use the actual orthographic height so widescreen displays do not make flicks too weak.
+    public static float TouchScale(double width,double height)=>(float)(4.8*HalfHeight(width,height)/Math.Max(1,height));
 }
