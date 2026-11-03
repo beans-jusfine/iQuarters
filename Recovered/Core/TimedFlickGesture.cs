@@ -9,20 +9,20 @@ public sealed class TimedFlickGesture
     readonly FlickGesture gesture=new();
     Vector2 pending,total;
     double previous,windowTime;
-    bool tracking;
-    public void Begin(double timestamp){Cancel();if(!double.IsFinite(timestamp))return;previous=timestamp;tracking=true;gesture.Begin();}
-    public void Cancel(){tracking=false;pending=total=default;windowTime=0;gesture.Cancel();}
+    bool tracking,completed;
+    public void Begin(double timestamp){Cancel();if(!double.IsFinite(timestamp))return;previous=timestamp;tracking=true;completed=false;gesture.Begin();}
+    public void Cancel(){tracking=false;completed=false;pending=total=default;windowTime=0;gesture.Cancel();}
     public bool Sample(Vector2 delta,double timestamp,out float power,out float aim)
     {
         power=aim=0;
-        if(!tracking||!double.IsFinite(timestamp)||timestamp<=previous||!float.IsFinite(delta.X)||!float.IsFinite(delta.Y))return false;
+        if(!tracking||completed||!double.IsFinite(timestamp)||timestamp<=previous||!float.IsFinite(delta.X)||!float.IsFinite(delta.Y))return false;
         total+=delta;
         double duration=timestamp-previous;previous=timestamp;
         if(windowTime+duration<ReferenceInterval-1e-9){pending+=delta;windowTime+=duration;return false;}
         double first=Math.Max(0,ReferenceInterval-windowTime);
         pending+=delta*(float)(first/duration);
         bool fired=gesture.Sample(pending,out power,out aim);pending=default;windowTime=0;
-        if(fired)return true;
+        if(fired){completed=true;return true;}
         double remaining=Math.Max(0,duration-first);
         if(remaining>=ReferenceInterval){
             // Every full window inside this linear segment has the same displacement.
