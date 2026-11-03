@@ -110,7 +110,7 @@ foreach(var viewport in new[]{(320d,480d),(320d,568d),(375d,812d),(440d,956d),(8
     var (width,height)=viewport;
     double half=PresentationRules.HalfHeight(width,height);
     Check(half*width/height>=200d/3-.00001,$"HUD fits width at {width}x{height}");
-    var g=new FlickGesture();g.Begin();g.Sample(new((float)(height*.025)*PresentationRules.TouchScale(width,height),(float)(height/12)*PresentationRules.TouchScale(width,height)),out var power,out var aim);
+    var g=new FlickGesture();g.Begin();float touchScale=PresentationRules.TouchScale(width,height);g.Sample(new(12/touchScale,40/touchScale),out var power,out var aim);
     Check(Math.Abs(power-flickPower)<.00001f&&Math.Abs(aim-1.2f)<.00001f,$"Relative flick strength/aim preserved at {width}x{height}");
 }
 Check(Math.Abs(PresentationRules.VerticalFieldOfView(320,480)-55)<.00001,"Original phone framing retained at 2:3");
