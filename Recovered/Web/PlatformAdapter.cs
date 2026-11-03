@@ -57,7 +57,7 @@ namespace CoreMotion {public sealed class CMMotionManager {public static CMMotio
 namespace IQuarters.iOS {
 public sealed class GameAudio:IDisposable {public void Stop(int channel)=>WebBridge.StopAudio(channel);public void Play(string file,int channel=0,float volume=1)=>WebBridge.PlayAudio(file,channel,volume);public void Pause()=>WebBridge.AudioPause();public void Resume()=>WebBridge.AudioResume();public void Dispose()=>WebBridge.AudioPause();}
 public sealed class DisplayFrameLoop:IDisposable {public static readonly List<DisplayFrameLoop> Active=[];public Action<float> Tick;public DisplayFrameLoop(UIScreen screen,Action<float> tick,params SCNView[] views){Tick=tick;Active.Add(this);}public void Dispose()=>Active.Remove(this);}
-public sealed class TouchSceneView:CGRectView {public Action<CGPoint,double>? BeginContact,MoveContact;public Action? EndContact,CancelContact;public TouchSceneView(CGRect frame):base(frame){}}
+public sealed class TouchSceneView:CGRectView {public Action<CGPoint,double>? BeginContact,MoveContact;public Action? EndContact,CancelContact;public bool IsMouseContact;public TouchSceneView(CGRect frame):base(frame){}}
 public class CGRectView:SCNView {public CGRectView(CGRect frame):base(frame){}}
 public sealed partial class LegacyScene {
  System.Text.Json.JsonElement lighting;
